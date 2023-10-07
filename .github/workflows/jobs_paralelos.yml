@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:    
       - name: Notificao Discord Sucesso
-        if: always() && (job.dev.steps.job1.outcome == 'success' && job.qa.steps.job2.outcome == 'success' && job.prd.steps.job3.outcome == 'success')
+        if: always() && (needs.dev.result == 'success' && needs.qa.result == 'success' && needs.prd.result == 'success')
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -47,7 +47,7 @@ jobs:
           args: 'A automacao foi executada com sucesso!'
 
       - name: Notificao Discord Falha
-        if: always() && (job.dev.steps.job1.outcome == 'failure' || job.qa.steps.job2.outcome == 'failure' || job.prd.steps.job3.outcome == 'failure')
+        if: always() && (needs.dev.result == 'failure' || needs.qa.result == 'failure' || needs.prd.result == 'failure')
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
