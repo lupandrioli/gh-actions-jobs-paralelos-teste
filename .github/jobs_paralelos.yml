@@ -1,0 +1,53 @@
+name: Jobs paralelos
+
+on:
+  workflow_dispatch:
+  schedule: 
+    - cron: '0 11 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job 1
+        id: 'job1'
+        run: |
+          echo "job 1"
+  qa:
+    runs-on: ubuntu-latest
+    steps:    
+      - name: Job 2
+        id: 'job2'
+        run: |
+          echo "job 2"
+  prd:
+    runs-on: ubuntu-latest
+    steps:    
+      - name: Job 3
+        id: 'job3'
+        run: |
+          echo "job 3"
+
+  notification:
+    if: always()
+    needs: [dev,qa,prd]
+    runs-on: ubuntu-latest
+    steps:    
+      - name: Notificao Discord Sucesso
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: 'A automacao foi executada com sucesso!'
+
+      - name: Notificao Discord Sucesso
+        if: always() && (jobs.dev.steps.job1.outcome == 'failure' || jobs.qa.steps.job2.outcome == 'failure' || jobs.prd.steps.job3.outcome == 'failure')
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: 'A automacao foi executada com falha!'
